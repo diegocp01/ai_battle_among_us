@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Among Us: AI Battle Arena</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Starfield -->
+    <div class="starfield">
+        <div class="star-layer star-layer-1"></div>
+        <div class="star-layer star-layer-2"></div>
+        <div class="star-layer star-layer-3"></div>
+    </div>
+
+    <!-- ─── MODEL SELECT MODAL ──────────────────────────────────── -->
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-glow"></div>
+            <!-- Crewmate SVG as logo -->
+            <div class="modal-crew-logo">
+                <svg viewBox="0 0 80 90" class="crewmate-svg modal-crewmate">
+                    <path d="M12 36 C12 24 18 18 28 18 L28 62 C18 60 12 52 12 42 Z" fill="#c51111" opacity="0.85"/>
+                    <path d="M28 18 C28 6 38 4 50 6 C62 8 68 16 68 30 L68 58 C68 70 60 76 50 78 L50 84 C50 88 46 90 42 90 L36 90 C32 90 28 88 28 84 L28 76 C18 73 14 66 14 58 L14 32 C14 24 18 20 28 18 Z" fill="#c51111"/>
+                    <ellipse cx="52" cy="30" rx="12" ry="9" fill="#1eaed8"/>
+                    <ellipse cx="56" cy="27" rx="4" ry="3" fill="rgba(255,255,255,0.5)"/>
+                </svg>
+            </div>
+            <h2>AMONG US</h2>
+            <p class="modal-sub">AI Battle Arena &mdash; 6 Players, 1 Impostor</p>
+
+            <div class="modal-form">
+                <label for="gpt-model">
+                    <img src="/static/img/openai.webp" alt="" class="label-icon"> OpenAI Model
+                    <span class="label-note">(GPT-1 &amp; GPT-2 &amp; GPT-3)</span>
+                </label>
+                <select id="gpt-model">
+                    <option value="gpt-5-mini">GPT 5 Mini</option>
+                    <option value="gpt-5.1-low">GPT 5.1 Low</option>
+                    <option value="gpt-5.1" selected>GPT 5.1 Medium</option>
+                    <option value="gpt-5.2">GPT 5.2 Medium</option>
+                    <option value="gpt-5.2-high">GPT 5.2 High</option>
+                </select>
+
+                <label for="claude-model">
+                    <img src="/static/img/anthropic.jpeg" alt="" class="label-icon"> Anthropic Model
+                    <span class="label-note">(Claude-1 &amp; Claude-2 &amp; Claude-3)</span>
+                </label>
+                <select id="claude-model">
+                    <option value="claude-haiku-4.5-standard">Claude Haiku 4.5</option>
+                    <option value="claude-haiku-4.5" selected>Claude Haiku 4.5 Thinking</option>
+                    <option value="claude-sonnet-4.5-standard">Claude Sonnet 4.5</option>
+                    <option value="claude-sonnet-4.5">Claude Sonnet 4.5 Thinking</option>
+                    <option value="claude-opus-4.5">Claude Opus 4.5 Thinking</option>
+                </select>
+            </div>
+
+            <button id="btn-run" class="btn-run">
+                <span class="btn-text">START GAME</span>
+            </button>
+            <div class="modal-footer">SHH! 1 impostor among us...</div>
+        </div>
+    </div>
+
+    <!-- ─── MAIN GAME ───────────────────────────────────────────── -->
+    <div id="game-container" class="game-container hidden">
+
+        <!-- HUD Top Bar -->
+        <div class="hud-bar">
+            <div class="hud-left">
+                <div class="hud-round">ROUND <span id="round-number">1</span></div>
+            </div>
+            <div class="hud-center">
+                <div id="phase-indicator" class="phase-badge phase-action">ACTION PHASE</div>
+            </div>
+            <div class="hud-right">
+                <div class="hud-tasks">
+                    <span class="hud-tasks-label">TOTAL TASKS</span>
+                    <div class="hud-task-bar">
+                        <div id="task-bar-fill" class="hud-task-fill" style="width:0%"></div>
+                    </div>
+                    <span id="task-count" class="hud-task-count">0/6</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Three-column layout -->
+        <div class="game-columns">
+
+            <!-- ─── LEFT: OpenAI Crew ───────────────────────────── -->
+            <div class="crew-panel panel-openai">
+                <div class="panel-header">
+                    <img src="/static/img/openai.webp" alt="OpenAI" class="panel-logo">
+                    <div>
+                        <div class="panel-title">OpenAI Crew</div>
+                        <div id="gpt-model-label" class="panel-model">GPT 5.1 Medium</div>
+                    </div>
+                </div>
+
+                <!-- Player: GPT-1 -->
+                <div id="player-gpt-1" class="player-card" data-player="gpt-1">
+                    <div class="pc-top">
+                        <div class="crewmate-mini crew-color-red">
+                            <svg viewBox="0 0 80 90">
+                                <path d="M12 36 C12 24 18 18 28 18 L28 62 C18 60 12 52 12 42 Z" fill="currentColor" opacity="0.85"/>
+                                <path d="M28 18 C28 6 38 4 50 6 C62 8 68 16 68 30 L68 58 C68 70 60 76 50 78 L50 84 C50 88 46 90 42 90 L36 90 C32 90 28 88 28 84 L28 76 C18 73 14 66 14 58 L14 32 C14 24 18 20 28 18 Z" fill="currentColor"/>
+                                <ellipse cx="52" cy="30" rx="12" ry="9" fill="#1eaed8"/>
+                                <ellipse cx="56" cy="27" rx="4" ry="3" fill="rgba(255,255,255,0.5)"/>
+                            </svg>
+                        </div>
+                        <div class="pc-info">
+                            <div class="pc-name">GPT-1</div>
+                            <div class="pc-role" id="role-gpt-1">CREWMATE</div>
+                        </div>
+                        <div class="pc-status" id="status-gpt-1">ALIVE</div>
+                    </div>
+                    <div class="pc-location"><span class="pc-loc-icon">&#x1F4CD;</span> <span id="location-gpt-1">Cafeteria</span></div>
+                    <div class="pc-tasks" id="tasks-gpt-1"></div>
+                    <div class="pc-timing">
+                        <span>Last: <b id="time-last-gpt-1">0.0s</b></span>
+                        <span>Total: <b id="time-total-gpt-1">0.0s</b></span>
+                    </div>
+                    <div class="pc-reasoning" id="reasoning-gpt-1">Waiting for game...</div>
+                </div>
+
+                <!-- Player: GPT-2 -->
+                <div id="player-gpt-2" class="player-card" data-player="gpt-2">
+                    <div class="pc-top">
+                        <div class="crewmate-mini crew-color-blue">
+                            <svg viewBox="0 0 80 90">
+                                <path d="M12 36 C12 24 18 18 28 18 L28 62 C18 60 12 52 12 42 Z" fill="currentColor" opacity="0.85"/>
+                                <path d="M28 18 C28 6 38 4 50 6 C62 8 68 16 68 30 L68 58 C68 70 60 76 50 78 L50 84 C50 88 46 90 42 90 L36 90 C32 90 28 88 28 84 L28 76 C18 73 14 66 14 58 L14 32 C14 24 18 20 28 18 Z" fill="currentColor"/>
+                                <ellipse cx="52" cy="30" rx="12" ry="9" fill="#1eaed8"/>
+                                <ellipse cx="56" cy="27" rx="4" ry="3" fill="rgba(255,255,255,0.5)"/>
+                            </svg>
+                        </div>
+                        <div class="pc-info">
+                            <div class="pc-name">GPT-2</div>
+                            <div class="pc-role" id="role-gpt-2">CREWMATE</div>
+                        </div>
+                        <div class="pc-status" id="status-gpt-2">ALIVE</div>
+                    </div>
+                    <div class="pc-location"><span class="pc-loc-icon">&#x1F4CD;</span> <span id="location-gpt-2">Cafeteria</span></div>
+                    <div class="pc-tasks" id="tasks-gpt-2"></div>
+                    <div class="pc-timing">
+                        <span>Last: <b id="time-last-gpt-2">0.0s</b></span>
+                        <span>Total: <b id="time-total-gpt-2">0.0s</b></span>
+                    </div>
+                    <div class="pc-reasoning" id="reasoning-gpt-2">Waiting for game...</div>
+                </div>
+
+                <!-- Player: GPT-3 -->
+                <div id="player-gpt-3" class="player-card" data-player="gpt-3">
+                    <div class="pc-top">
+                        <div class="crewmate-mini crew-color-cyan">
+                            <svg viewBox="0 0 80 90">
+                                <path d="M12 36 C12 24 18 18 28 18 L28 62 C18 60 12 52 12 42 Z" fill="currentColor" opacity="0.85"/>
+                                <path d="M28 18 C28 6 38 4 50 6 C62 8 68 16 68 30 L68 58 C68 70 60 76 50 78 L50 84 C50 88 46 90 42 90 L36 90 C32 90 28 88 28 84 L28 76 C18 73 14 66 14 58 L14 32 C14 24 18 20 28 18 Z" fill="currentColor"/>
+                                <ellipse cx="52" cy="30" rx="12" ry="9" fill="#1eaed8"/>
+                                <ellipse cx="56" cy="27" rx="4" ry="3" fill="rgba(255,255,255,0.5)"/>
+                            </svg>
+                        </div>
+                        <div class="pc-info">
+                            <div class="pc-name">GPT-3</div>
+                            <div class="pc-role" id="role-gpt-3">CREWMATE</div>
+                        </div>
+                        <div class="pc-status" id="status-gpt-3">ALIVE</div>
+                    </div>
+                    <div class="pc-location"><span class="pc-loc-icon">&#x1F4CD;</span> <span id="location-gpt-3">Cafeteria</span></div>
+                    <div class="pc-tasks" id="tasks-gpt-3"></div>
+                    <div class="pc-timing">
+                        <span>Last: <b id="time-last-gpt-3">0.0s</b></span>
+                        <span>Total: <b id="time-total-gpt-3">0.0s</b></span>
+                    </div>
+                    <div class="pc-reasoning" id="reasoning-gpt-3">Waiting for game...</div>
+                </div>
+            </div>
+
+            <!-- ─── CENTER: Ship + Chat + Votes + Log ───────────── -->
+            <div class="center-col">
+
+                <!-- Ship Map -->
+                <div class="ship-hull">
+                    <div class="ship-interior">
+                        <div class="ship-room" id="room-Cafeteria">
+                            <div class="room-label">CAFETERIA</div>
+                            <div class="room-art cafeteria-art">
+                                <div class="emergency-table">
+                                    <div class="emergency-button"></div>
+                                    <div class="emergency-label">EMERGENCY</div>
+                                </div>
+                                <div class="table-chair chair-1"></div>
+                                <div class="table-chair chair-2"></div>
+                                <div class="table-chair chair-3"></div>
+                                <div class="table-chair chair-4"></div>
+                                <div class="food-tray"></div>
+                                <div class="table-round table-a"></div>
+                                <div class="table-round table-b"></div>
+                            </div>
+                            <div class="room-players" id="room-players-Cafeteria"></div>
+                        </div>
+                        <div class="ship-room" id="room-Electrical">
+                            <div class="room-label">ELECTRICAL</div>
+                            <div class="room-art electrical-art">
+                                <div class="wires-panel">
+                                    <div class="wire wire-red"></div>
+                                    <div class="wire wire-yellow"></div>
+                                    <div class="wire wire-blue"></div>
+                                    <div class="wire wire-green"></div>
+                                </div>
+                                <div class="breaker-panel">
+                                    <div class="breaker-toggle"></div>
+                                    <div class="breaker-toggle"></div>
+                                    <div class="breaker-toggle"></div>
+                                </div>
+                                <div class="vent vent-left"></div>
+                                <div class="power-cell"></div>
+                                <div class="floor-grate"></div>
+                            </div>
+                            <div class="room-players" id="room-players-Electrical"></div>
+                        </div>
+                        <div class="ship-room" id="room-MedBay">
+                            <div class="room-label">MEDBAY</div>
+                            <div class="room-art medbay-art">
+                                <div class="scanner-ring"></div>
+                                <div class="med-bed">
+                                    <div class="pillow"></div>
+                                </div>
+                                <div class="med-monitor"></div>
+                                <div class="med-cart"></div>
+                                <div class="med-cabinet"></div>
+                            </div>
+                            <div class="room-players" id="room-players-MedBay"></div>
+                        </div>
+                        <div class="ship-room" id="room-Navigation">
+                            <div class="room-label">NAVIGATION</div>
+                            <div class="room-art navigation-art">
+                                <div class="nav-window"></div>
+                                <div class="nav-console"></div>
+                                <div class="nav-screen"></div>
+                                <div class="nav-chair"></div>
+                                <div class="nav-radar"></div>
+                            </div>
+                            <div class="room-players" id="room-players-Navigation"></div>
+                        </div>
+                        <div class="ship-room" id="room-Reactor">
+                            <div class="room-label">REACTOR</div>
+                            <div class="room-art reactor-art">
+                                <div class="reactor-core"></div>
+                                <div class="reactor-ring ring-1"></div>
+                                <div class="reactor-ring ring-2"></div>
+                                <div class="reactor-pipe pipe-a"></div>
+                                <div class="reactor-pipe pipe-b"></div>
+                                <div class="reactor-pillar"></div>
+                                <div class="reactor-console"></div>
+                            </div>
+                            <div class="room-players" id="room-players-Reactor"></div>
+                        </div>
+                        <div id="map-bodies" class="map-bodies"></div>
+                        <div id="map-players" class="map-players"></div>
+                    </div>
+                    <div id="body-indicators"></div>
+                    <div class="ship-glass"></div>
+                </div>
+
+                <!-- Phase status line -->
+                <div id="phase-status" class="phase-status">Preparing game...</div>
+
+                <!-- Meeting / Discussion -->
+                <div id="discussion-panel" class="discussion-panel hidden">
+                    <div class="disc-header">
+                        <span class="disc-icon">&#x1F6A8;</span>
+                        <span>EMERGENCY MEETING</span>
+                    </div>
+                    <div id="discussion-log" class="discussion-log"></div>
+                </div>
+
+                <!-- Voting -->
+                <div id="voting-panel" class="voting-panel hidden">
+                    <div class="vote-header">WHO IS THE IMPOSTOR?</div>
+                    <div id="vote-results" class="vote-results"></div>
+                </div>
+
+                <!-- Ejection -->
+                <div id="ejection-banner" class="ejection-banner hidden"></div>
+
+                <!-- Event log -->
+                <div class="event-panel">
+                    <div class="event-header">SHIP LOG</div>
+                    <div id="event-log" class="event-log"></div>
+                </div>
+            </div>
+
+            <!-- ─── RIGHT: Anthropic Crew ───────────────────────── -->
+            <div class="crew-panel panel-anthropic">
+                <div class="panel-header">
+                    <img src="/static/img/anthropic.jpeg" alt="Anthropic" class="panel-logo">
+                    <div>
+                        <div class="panel-title">Anthropic Crew</div>
+                        <div id="claude-model-label" class="panel-model">Claude Haiku 4.5 Thinking</div>
+                    </div>
+                </div>
+
+                <!-- Player: Claude-1 -->
+                <div id="player-claude-1" class="player-card" data-player="claude-1">
+                    <div class="pc-top">
+                        <div class="crewmate-mini crew-color-green">
+                            <svg viewBox="0 0 80 90">
+                                <path d="M12 36 C12 24 18 18 28 18 L28 62 C18 60 12 52 12 42 Z" fill="currentColor" opacity="0.85"/>
+                                <path d="M28 18 C28 6 38 4 50 6 C62 8 68 16 68 30 L68 58 C68 70 60 76 50 78 L50 84 C50 88 46 90 42 90 L36 90 C32 90 28 88 28 84 L28 76 C18 73 14 66 14 58 L14 32 C14 24 18 20 28 18 Z" fill="currentColor"/>
+                                <ellipse cx="52" cy="30" rx="12" ry="9" fill="#1eaed8"/>
+                                <ellipse cx="56" cy="27" rx="4" ry="3" fill="rgba(255,255,255,0.5)"/>
+                            </svg>
+                        </div>
+                        <div class="pc-info">
+                            <div class="pc-name">Claude-1</div>
+                            <div class="pc-role" id="role-claude-1">CREWMATE</div>
+                        </div>
+                        <div class="pc-status" id="status-claude-1">ALIVE</div>
+                    </div>
+                    <div class="pc-location"><span class="pc-loc-icon">&#x1F4CD;</span> <span id="location-claude-1">Cafeteria</span></div>
+                    <div class="pc-tasks" id="tasks-claude-1"></div>
+                    <div class="pc-timing">
+                        <span>Last: <b id="time-last-claude-1">0.0s</b></span>
+                        <span>Total: <b id="time-total-claude-1">0.0s</b></span>
+                    </div>
+                    <div class="pc-reasoning" id="reasoning-claude-1">Waiting for game...</div>
+                </div>
+
+                <!-- Player: Claude-2 -->
+                <div id="player-claude-2" class="player-card" data-player="claude-2">
+                    <div class="pc-top">
+                        <div class="crewmate-mini crew-color-yellow">
+                            <svg viewBox="0 0 80 90">
+                                <path d="M12 36 C12 24 18 18 28 18 L28 62 C18 60 12 52 12 42 Z" fill="currentColor" opacity="0.85"/>
+                                <path d="M28 18 C28 6 38 4 50 6 C62 8 68 16 68 30 L68 58 C68 70 60 76 50 78 L50 84 C50 88 46 90 42 90 L36 90 C32 90 28 88 28 84 L28 76 C18 73 14 66 14 58 L14 32 C14 24 18 20 28 18 Z" fill="currentColor"/>
+                                <ellipse cx="52" cy="30" rx="12" ry="9" fill="#1eaed8"/>
+                                <ellipse cx="56" cy="27" rx="4" ry="3" fill="rgba(255,255,255,0.5)"/>
+                            </svg>
+                        </div>
+                        <div class="pc-info">
+                            <div class="pc-name">Claude-2</div>
+                            <div class="pc-role" id="role-claude-2">CREWMATE</div>
+                        </div>
+                        <div class="pc-status" id="status-claude-2">ALIVE</div>
+                    </div>
+                    <div class="pc-location"><span class="pc-loc-icon">&#x1F4CD;</span> <span id="location-claude-2">Cafeteria</span></div>
+                    <div class="pc-tasks" id="tasks-claude-2"></div>
+                    <div class="pc-timing">
+                        <span>Last: <b id="time-last-claude-2">0.0s</b></span>
+                        <span>Total: <b id="time-total-claude-2">0.0s</b></span>
+                    </div>
+                    <div class="pc-reasoning" id="reasoning-claude-2">Waiting for game...</div>
+                </div>
+
+                <!-- Player: Claude-3 -->
+                <div id="player-claude-3" class="player-card" data-player="claude-3">
+                    <div class="pc-top">
+                        <div class="crewmate-mini crew-color-orange">
+                            <svg viewBox="0 0 80 90">
+                                <path d="M12 36 C12 24 18 18 28 18 L28 62 C18 60 12 52 12 42 Z" fill="currentColor" opacity="0.85"/>
+                                <path d="M28 18 C28 6 38 4 50 6 C62 8 68 16 68 30 L68 58 C68 70 60 76 50 78 L50 84 C50 88 46 90 42 90 L36 90 C32 90 28 88 28 84 L28 76 C18 73 14 66 14 58 L14 32 C14 24 18 20 28 18 Z" fill="currentColor"/>
+                                <ellipse cx="52" cy="30" rx="12" ry="9" fill="#1eaed8"/>
+                                <ellipse cx="56" cy="27" rx="4" ry="3" fill="rgba(255,255,255,0.5)"/>
+                            </svg>
+                        </div>
+                        <div class="pc-info">
+                            <div class="pc-name">Claude-3</div>
+                            <div class="pc-role" id="role-claude-3">CREWMATE</div>
+                        </div>
+                        <div class="pc-status" id="status-claude-3">ALIVE</div>
+                    </div>
+                    <div class="pc-location"><span class="pc-loc-icon">&#x1F4CD;</span> <span id="location-claude-3">Cafeteria</span></div>
+                    <div class="pc-tasks" id="tasks-claude-3"></div>
+                    <div class="pc-timing">
+                        <span>Last: <b id="time-last-claude-3">0.0s</b></span>
+                        <span>Total: <b id="time-total-claude-3">0.0s</b></span>
+                    </div>
+                    <div class="pc-reasoning" id="reasoning-claude-3">Waiting for game...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── GAME OVER OVERLAY ───────────────────────────────── -->
+        <div id="game-over-overlay" class="game-over-overlay hidden">
+            <div id="game-over-content" class="game-over-content">
+                <div id="game-over-icon" class="game-over-icon"></div>
+                <h2 id="game-over-title"></h2>
+                <p id="game-over-subtitle"></p>
+                <button class="btn-run" onclick="location.reload()"><span class="btn-text">PLAY AGAIN</span></button>
+            </div>
+        </div>
+
+        <!-- ─── EJECTION CINEMATIC ──────────────────────────────── -->
+        <div id="eject-cinematic" class="eject-cinematic hidden">
+            <div class="eject-stars"></div>
+            <div id="eject-crew" class="eject-crew">
+                <svg viewBox="0 0 80 90" class="eject-svg">
+                    <path d="M12 36 C12 24 18 18 28 18 L28 62 C18 60 12 52 12 42 Z" fill="currentColor" opacity="0.85"/>
+                    <path d="M28 18 C28 6 38 4 50 6 C62 8 68 16 68 30 L68 58 C68 70 60 76 50 78 L50 84 C50 88 46 90 42 90 L36 90 C32 90 28 88 28 84 L28 76 C18 73 14 66 14 58 L14 32 C14 24 18 20 28 18 Z" fill="currentColor"/>
+                    <ellipse cx="52" cy="30" rx="12" ry="9" fill="#1eaed8"/>
+                    <ellipse cx="56" cy="27" rx="4" ry="3" fill="rgba(255,255,255,0.5)"/>
+                </svg>
+            </div>
+            <div id="eject-text" class="eject-text"></div>
+            <div id="eject-role" class="eject-role"></div>
+        </div>
+    </div>
+
+    <script src="/static/js/game.js"></script>
+</body>
+
+</html>
