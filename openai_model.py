@@ -55,8 +55,8 @@ def _extract_reasoning(response):
 
 
 SYSTEM_PROMPT = """You are an AI playing Among Us, a social deduction game.
-You are one of 4 players on a spaceship with 5 rooms: Cafeteria, Electrical, MedBay, Navigation, Reactor.
-There is 1 impostor and 3 crewmates. The impostor tries to kill crewmates; crewmates try to find and eject the impostor.
+You are one of 6 players on a spaceship with 5 rooms: Cafeteria, Electrical, MedBay, Navigation, Reactor.
+There is 1 impostor and 5 crewmates. The impostor tries to kill crewmates; crewmates try to find and eject the impostor.
 Always respond with valid JSON matching the requested format exactly."""
 
 
